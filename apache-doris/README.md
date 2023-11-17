@@ -3,7 +3,7 @@ It is a next-generation real-time data warehouse that can handle large amounts o
 
 Here are some of the key features of Apache Doris:
 - It is a columnar storage engine, which encodes, compresses, and reads data by column. This makes it very efficient for analytical queries.
--It uses a cost-based optimizer (CBO) to figure out the most efficient execution plan for complicated big queries.
+- It uses a cost-based optimizer (CBO) to figure out the most efficient execution plan for complicated big queries.
 - It has a fully vectorized execution engine so it can reduce virtual function calls and cache misses.
 - It is MPP-based (Massively Parallel Processing) so it can give full play to the user's machines and cores.
 - In Doris, query execution is data-driven, which means whether a query gets executed is determined by whether its relevant data is ready, and this enables more efficient use of CPUs.
