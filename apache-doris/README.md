@@ -1,0 +1,1 @@
+Apache Doris is an open-source, real-time data warehouse that is known for its speed and ease of use. It can collect data from many different sources, including relational databases, logs, and time series data from IoT devices. Apache Doris can be used for reporting, ad-hoc analysis, federated queries, and log analysis. It can be deployed on-premises or in the cloud.
