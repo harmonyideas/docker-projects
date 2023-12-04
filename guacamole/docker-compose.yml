@@ -1,6 +1,6 @@
 ####################################################################################
 # docker-compose file for Apache Guacamole
-# created by PCFreak 2017-06-28
+# created by PCFreak 2017-06-28 + update by HaromnyIdeas
 #
 # Apache Guacamole is a clientless remote desktop gateway. It supports standard
 # protocols like VNC, RDP, and SSH. We call it clientless because no plugins or
