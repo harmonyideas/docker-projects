@@ -1,5 +1,5 @@
 # collection of docker projects
-This project contains a collection of simple docker projects. 
+This project contains a collection of some docker projects. 
 
 DirName      | Description
 ------------- | -------------  
