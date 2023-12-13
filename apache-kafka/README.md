@@ -5,3 +5,6 @@ Apache Kafka® is a distributed event streaming platform that is used for buildi
 At its core, Kafka is a distributed publish-subscribe messaging system. Data is written to Kafka topics by producers and consumed from those topics by consumers. Kafka topics can be partitioned, enabling the parallel processing of data, and topics can be replicated across multiple brokers for fault tolerance.
 
 With Kafka you get command-line tools for management and administration tasks, and Java and Scala APIs to build an event streaming solution for your scenarios.
+
+# Screenshot of kafka-ui
+![robog-screenshot1](kafka-ui-screenshot.png "Kafka-UI")
