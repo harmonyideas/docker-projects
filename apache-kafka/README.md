@@ -6,5 +6,5 @@ At its core, Kafka is a distributed publish-subscribe messaging system. Data is 
 
 With Kafka you get command-line tools for management and administration tasks, and Java and Scala APIs to build an event streaming solution for your scenarios.
 
-# Screenshot of kafka-ui
+### Screenshot
 ![robog-screenshot1](kafka-ui-screenshot.png "Kafka-UI")
