@@ -18,10 +18,10 @@ services:
       - "8080:8080"
     restart: "no"
     environment:
-      - KAFKA_CLUSTERS_0_NAME=test-kafka-cluster
-      - KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS=broker1:9093
-      - KAFKA_CLUSTERS_0_ZOOKEEPER=zoo1:2181
-      - KAFKA_CLUSTERS_0_READONLY=true
+      KAFKA_CLUSTERS_0_NAME: local
+      KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS: broker1:9093,broker2:9095,broker3:9097
+      KAFKA_CLUSTERS_0_ZOOKEEPER: zoo1:2181,zoo2:2182,zoo3:2183
+      KAFKA_CLUSTERS_0_READONLY: 'true'
 
   zoo1:
     image: zookeeper:latest
