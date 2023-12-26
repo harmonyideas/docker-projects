@@ -1,0 +1,101 @@
+Ukraine:30
+Ukraine:80
+France:67
+South Africa:58
+France:94
+Austria:19
+Turkey:91
+Spain:15
+Russian Federation:76
+Spain:14
+Nigeria:45
+Sweden:44
+Spain:98
+Philippines:73
+Austria:78
+Mexico:76
+Colombia:91
+Costa Rica:23
+Ukraine:2
+United Kingdom:98
+India:8
+Peru:59
+Ukraine:7
+Colombia:98
+Mexico:60
+India:48
+Poland:83
+Peru:93
+United States:77
+Austria:4
+Brazil:94
+Italy:56
+United States:85
+Pakistan:69
+Vietnam:81
+Canada:95
+Australia:86
+Pakistan:98
+Spain:98
+Canada:56
+United Kingdom:49
+South Korea:89
+New Zealand:33
+Austria:27
+Chile:11
+Colombia:56
+Nigeria:78
+Brazil:91
+New Zealand:52
+Pakistan:99
+Australia:86
+Chile:29
+Germany:93
+Poland:53
+United Kingdom:45
+Brazil:3
+Brazil:55
+Belgium:71
+Germany:24
+Belgium:68
+Singapore:66
+Costa Rica:2
+Australia:16
+Russian Federation:0
+South Korea:22
+New Zealand:7
+Netherlands:38
+Australia:42
+Nigeria:5
+Vietnam:30
+Austria:20
+Australia:31
+Philippines:96
+Singapore:26
+Vietnam:75
+Italy:16
+Chile:76
+Indonesia:38
+Ukraine:81
+Pakistan:26
+Ireland:70
+France:37
+Italy:28
+New Zealand:73
+Turkey:43
+Australia:76
+New Zealand:48
+South Africa:62
+Chile:19
+Ireland:87
+Canada:100
+Nigeria:62
+Austria:64
+United States:20
+Russian Federation:22
+Germany:60
+Chile:22
+Italy:79
+Spain:94
+Ireland:70
+
