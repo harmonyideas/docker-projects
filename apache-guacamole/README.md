@@ -1,3 +1,50 @@
+Docker Compose stack (apache-guacamole/docker-compose.yml)
+==========================================================
+
+SETUP (required before the first 'docker compose up')
+
+    cp .env.example .env
+
+Then edit .env and set POSTGRES_PASSWORD to a long random value. The compose
+file reads it with ${POSTGRES_PASSWORD:?...} and refuses to start without it.
+.env is git-ignored; never commit it.
+
+MISSING FILES
+-------------
+The compose file references files and folders that are NOT in this repository.
+The stack will not start until they exist. Nothing below has been generated;
+each item states what must be created.
+
+1. Dockerfile (for the 'guacamole' service, 'build: .')
+   Must exist in this folder. Either:
+   - write a Dockerfile that builds the Guacamole web app, or
+   - replace 'build: .' with 'image: guacamole/guacamole' (the official image
+     the compose comments refer to). This is a human decision.
+
+2. ./init/initdb.sql (mounted into the postgres container)
+   Generate once with the command documented in the compose file:
+       mkdir -p init
+       docker run --rm guacamole/guacamole /opt/guacamole/bin/initdb.sh --postgres > ./init/initdb.sql
+       chmod +x ./init
+   Postgres ignores the script if the folder is not executable.
+
+3. ./nginx/templates/guacamole.conf.template (mounted into the nginx container)
+   Must be an nginx server block that listens on 443 with SSL, uses
+   /etc/nginx/ssl/self.cert and /etc/nginx/ssl/self-ssl.key, and proxies
+   to http://guacamole:8080/guacamole/ with WebSocket upgrade headers.
+   The file is not in the repo and its content must be written by a person.
+
+4. ./nginx/ssl/self.cert and ./nginx/ssl/self-ssl.key (TLS certificate and key)
+   The compose comments say prepare.sh creates them, but prepare.sh is also
+   missing. Create a self-signed pair, or use your own certificate, with the
+   exact file names above.
+
+5. prepare.sh and reset.sh (referenced in the compose header comments)
+   Both are missing. They are not required by docker compose itself.
+
+Ports: nginx publishes 8443 on all interfaces. The guacamole service exposes
+only 8080 inside the Docker network.
+
 ------------------------------------------------------------
  What is guacamole-server?
 ------------------------------------------------------------
