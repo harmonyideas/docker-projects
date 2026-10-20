@@ -23,8 +23,8 @@
 #  'docker run --rm guacamole/guacamole /opt/guacamole/bin/initdb.sh --postgres > ./init/initdb.sql'
 #  once.
 #  DATA-DIR       is in './data'
-#  If you want to change the DB password change all lines with 'POSTGRES_PASSWORD:' and
-#  change it to your needs before first start.
+#  The DB password is NOT stored in this file. Copy .env.example to .env and set
+#  POSTGRES_PASSWORD there before first start (compose refuses to start without it).
 #  To start from scratch delete './data' dir completely
 #  './data' will hold all data after first start!
 #  The initdb.d scripts are only executed the first time the container is started
@@ -38,8 +38,11 @@
 #  './data' will hold all data after first start!
 #
 # (2)
-#  Make sure you use the same value for 'POSTGRES_USER' and 'POSTGRES_PASSWORD'
-#  as configured under (1)
+#  Uses the same POSTGRES_PASSWORD from .env as (1)
+#
+# !!!!! MISSING FILES: this stack will not start until these exist. See README.md:
+#       ./init/initdb.sql, ./nginx/templates/guacamole.conf.template,
+#       ./nginx/ssl/self.cert, ./nginx/ssl/self-ssl.key, and a Dockerfile for 'build: .'
 #
 # (3)
 #  ./nginx/templates folder will be mapped read-only into the container at /etc/nginx/templates
@@ -95,7 +98,7 @@ services:
   # guacd
   guacd:
     container_name: guacd_compose
-    image: guacamole/guacd
+    image: guacamole/guacd:1.5.5
     networks:
       guacnetwork_compose:
     restart: always
@@ -108,13 +111,14 @@ services:
     environment:
       PGDATA: /var/lib/postgresql/data/guacamole
       POSTGRES_DB: guacamole_db
-      POSTGRES_PASSWORD: 'ChooseYourOwnPasswordHere1234'
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD in .env}
       POSTGRES_USER: guacamole_user
-    image: postgres:13.4-buster
+    image: postgres:16
     networks:
       guacnetwork_compose:
     restart: always
     volumes:
+    # MISSING: ./init/initdb.sql (see README.md). Must be executable (chmod +x ./init).
     - ./init:/docker-entrypoint-initdb.d:z
     - ./data:/var/lib/postgresql/data:Z
 
@@ -128,8 +132,9 @@ services:
       GUACD_HOSTNAME: guacd
       POSTGRES_DATABASE: guacamole_db
       POSTGRES_HOSTNAME: postgres
-      POSTGRES_PASSWORD: 'ChooseYourOwnPasswordHere1234'
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD in .env}
       POSTGRES_USER: guacamole_user
+    # MISSING: no Dockerfile exists in this folder (see README.md). 'build: .' fails until one is added.
     build: .
     links:
     - guacd
@@ -149,6 +154,8 @@ services:
    restart: always
    image: nginx
    volumes:
+   # MISSING: ./nginx/templates/guacamole.conf.template and the two ./nginx/ssl files
+   # below must be created before first start (see README.md).
    - ./nginx/templates:/etc/nginx/templates:ro
    - ./nginx/ssl/self.cert:/etc/nginx/ssl/self.cert:ro
    - ./nginx/ssl/self-ssl.key:/etc/nginx/ssl/self-ssl.key:ro

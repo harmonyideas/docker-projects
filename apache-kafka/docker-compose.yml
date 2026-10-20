@@ -8,7 +8,7 @@ x-common-variables: &kafka-common-variables
 
 services:
   kafka-ui:
-    image: provectuslabs/kafka-ui
+    image: provectuslabs/kafka-ui:v0.7.2
     container_name: kafka-ui
     depends_on:
       - broker1
@@ -16,7 +16,7 @@ services:
       - broker3
     ports:
       - "8080:8080"
-    restart: "no"
+    restart: "unless-stopped"
     environment:
       KAFKA_CLUSTERS_0_NAME: local
       KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS: broker1:9093,broker2:9095,broker3:9097
@@ -24,12 +24,12 @@ services:
       KAFKA_CLUSTERS_0_READONLY: 'true'
 
   zoo1:
-    image: zookeeper:latest
-    restart: "no"
+    image: zookeeper:3.8.4
+    restart: "unless-stopped"
     hostname: zoo1
     container_name: zoo1
     ports:
-      - 2181:2181
+      - "127.0.0.1:2181:2181"
     volumes:
       - ./data/zookeeper1/data:/data
       - ./data/zookeeper1/datalog:/datalog
@@ -38,12 +38,12 @@ services:
       ZOO_SERVERS: server.1=0.0.0.0:2888:3888;2181 server.2=zoo2:2888:3888;2181 server.3=zoo3:2888:3888;2181
 
   zoo2:
-    image: zookeeper:latest
-    restart: "no"
+    image: zookeeper:3.8.4
+    restart: "unless-stopped"
     hostname: zoo2
     container_name: zoo2
     ports:
-      - 2182:2181
+      - "127.0.0.1:2182:2181"
     volumes:
       - ./data/zookeeper2/data:/data
       - ./data/zookeeper2/datalog:/datalog
@@ -52,12 +52,12 @@ services:
       ZOO_SERVERS: server.1=zoo1:2888:3888;2181 server.2=0.0.0.0:2888:3888;2181 server.3=zoo3:2888:3888;2181
 
   zoo3:
-    image: zookeeper:latest
-    restart: "no"
+    image: zookeeper:3.8.4
+    restart: "unless-stopped"
     hostname: zoo3
     container_name: zoo3
     ports:
-      - 2183:2181
+      - "127.0.0.1:2183:2181"
     volumes:
       - ./data/zookeeper3/data:/data
       - ./data/zookeeper3/datalog:/datalog
@@ -66,8 +66,8 @@ services:
       ZOO_SERVERS: server.1=zoo1:2888:3888;2181 server.2=zoo2:2888:3888;2181 server.3=0.0.0.0:2888:3888;2181
 
   broker1:
-    image: confluentinc/cp-kafka:latest
-    restart: "no"
+    image: confluentinc/cp-kafka:7.6.1
+    restart: "unless-stopped"
     hostname: broker1
     container_name: broker1
     depends_on:
@@ -75,7 +75,7 @@ services:
       - zoo2
       - zoo3
     ports:
-      - "9092:9092"
+      - "127.0.0.1:9092:9092"
     volumes:
       - ./data/kafka1/data:/var/lib/kafka/data
     environment:
@@ -84,12 +84,13 @@ services:
       KAFKA_BROKER_ID: 1
       KAFKA_ZOOKEEPER_CONNECT: 'zoo1:2181,zoo2:2181,zoo3:2181'
       KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: CLIENT:PLAINTEXT,INTER_BROKER:PLAINTEXT
+      KAFKA_LISTENERS: CLIENT://0.0.0.0:9092,INTER_BROKER://0.0.0.0:9093
       KAFKA_ADVERTISED_LISTENERS: CLIENT://localhost:9092,INTER_BROKER://broker1:9093
       KAFKA_INTER_BROKER_LISTENER_NAME: INTER_BROKER
 
   broker2:
-    image: confluentinc/cp-kafka:latest
-    restart: "no"
+    image: confluentinc/cp-kafka:7.6.1
+    restart: "unless-stopped"
     hostname: broker2
     container_name: broker2
     depends_on:
@@ -97,7 +98,7 @@ services:
       - zoo2
       - zoo3
     ports:
-      - "9094:9094"
+      - "127.0.0.1:9094:9094"
     volumes:
       - ./data/kafka2/data:/var/lib/kafka/data
     environment:
@@ -106,12 +107,13 @@ services:
       KAFKA_BROKER_ID: 2
       KAFKA_ZOOKEEPER_CONNECT: 'zoo1:2181,zoo2:2181,zoo3:2181'
       KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: CLIENT:PLAINTEXT,INTER_BROKER:PLAINTEXT
+      KAFKA_LISTENERS: CLIENT://0.0.0.0:9094,INTER_BROKER://0.0.0.0:9095
       KAFKA_ADVERTISED_LISTENERS: CLIENT://localhost:9094,INTER_BROKER://broker2:9095
       KAFKA_INTER_BROKER_LISTENER_NAME: INTER_BROKER
 
   broker3:
-    image: confluentinc/cp-kafka:latest
-    restart: "no"
+    image: confluentinc/cp-kafka:7.6.1
+    restart: "unless-stopped"
     hostname: broker3
     container_name: broker3
     depends_on:
@@ -119,7 +121,7 @@ services:
       - zoo2
       - zoo3
     ports:
-      - "9096:9096"
+      - "127.0.0.1:9096:9096"
     volumes:
       - ./data/kafka3/data:/var/lib/kafka/data
     environment:
@@ -128,5 +130,6 @@ services:
       KAFKA_BROKER_ID: 3
       KAFKA_ZOOKEEPER_CONNECT: 'zoo1:2181,zoo2:2181,zoo3:2181'
       KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: CLIENT:PLAINTEXT,INTER_BROKER:PLAINTEXT
+      KAFKA_LISTENERS: CLIENT://0.0.0.0:9096,INTER_BROKER://0.0.0.0:9097
       KAFKA_ADVERTISED_LISTENERS: CLIENT://localhost:9096,INTER_BROKER://broker3:9097
       KAFKA_INTER_BROKER_LISTENER_NAME: INTER_BROKER

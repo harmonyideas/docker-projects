@@ -9,8 +9,11 @@ import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import java.util.Properties;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 public class KafkaStreamsDemo {
+    private static final Logger log = Logger.getLogger(KafkaStreamsDemo.class);
+
     public static void main(String[] args) {
         BasicConfigurator.configure();
         Logger.getRootLogger().setLevel(Level.INFO);
@@ -39,14 +42,17 @@ public class KafkaStreamsDemo {
         final KafkaStreams streams = new KafkaStreams(builder.build(), props);
 
         final CountDownLatch latch = new CountDownLatch(1);
+        final AtomicBoolean failed = new AtomicBoolean(false);
 
-        try {
-            streams.start();
-            latch.await();
-        } catch (final Throwable e) {
-            System.exit(1);
-        }
+        // Log and stop on a stream thread failure (for example a value that
+        // Long.parseLong cannot parse) instead of letting the thread die silently.
+        streams.setUncaughtExceptionHandler((thread, throwable) -> {
+            log.error("Stream thread " + thread.getName() + " failed; shutting down", throwable);
+            failed.set(true);
+            latch.countDown();
+        });
 
+        // Registered before start() so Ctrl+C / SIGTERM closes the streams.
         Runtime.getRuntime().addShutdownHook(new Thread("streams-totalviews") {
             @Override
             public void run() {
@@ -55,7 +61,15 @@ public class KafkaStreamsDemo {
             }
         });
 
-        System.exit(0);
+        try {
+            streams.start();
+            latch.await();
+        } catch (final Throwable e) {
+            log.error("Failed to run Kafka Streams application", e);
+            System.exit(1);
+        }
+
+        System.exit(failed.get() ? 1 : 0);
     }
 }
 

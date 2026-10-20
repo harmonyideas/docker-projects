@@ -7,10 +7,15 @@ services:
     environment:
       - FE_SERVERS=fe1:172.30.80.2:9010
       - FE_ID=1
+      # Required: set in .env (copy .env.example). Compose refuses to start without it.
+      # NOTE: the apache/doris image does not set the root password from this variable
+      # by itself. See README.md for how to apply it.
+      - "DORIS_ROOT_PASSWORD=${DORIS_ROOT_PASSWORD:?set DORIS_ROOT_PASSWORD in .env}"
     ports:
-      - 8030:8030
-      - 9030:9030
+      - "127.0.0.1:8030:8030"
+      - "127.0.0.1:9030:9030"
     volumes:
+      # MISSING: ./data/doris/fe/conf must contain the FE config files (see README.md)
       - ./data/doris/fe/doris-meta:/opt/apache-doris/fe/doris-meta
       - ./data/doris/fe/conf:/opt/apache-doris/fe/conf
       - ./data/doris/fe/log:/opt/apache-doris/fe/log
@@ -31,10 +36,12 @@ services:
       - FE_SERVERS=fe1:172.30.80.2:9010
       - BE_ADDR=172.30.80.3:9050
     ports:
-      - 8040:8040
+      - "127.0.0.1:8040:8040"
     volumes:
       - ./data/doris/be/storage:/opt/apache-doris/be/storage
+      # MISSING: ./data/doris/be/conf must contain the BE config files (see README.md)
       - ./data/doris/be/conf:/opt/apache-doris/be/conf
+      # Optional: init scripts. Not present in this repo (see README.md)
       - ./data/doris/be/script:/docker-entrypoint-initdb.d
       - ./data/doris/be/log:/opt/apache-doris/be/log
     logging:

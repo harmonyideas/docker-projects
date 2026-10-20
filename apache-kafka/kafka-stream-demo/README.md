@@ -125,24 +125,28 @@ In the `pom.xml` file, add the following dependencies. This includes kafka str
         <artifactId>slf4j-log4j12</artifactId>
         <version>1.7.30</version>
     </dependency>
+    <dependency>
+        <groupId>junit</groupId>
+        <artifactId>junit</artifactId>
+        <version>3.8.1</version>
+        <scope>test</scope>
+    </dependency>
 </dependencies>
 ```
 
 Below is the complete `pom.xml` file.
 
 ```
-<?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0"
-         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-    <modelVersion>4.0.0</modelVersion>
-
-    <groupId>org.example</groupId>
-    <artifactId>kafka-streams-demo</artifactId>
-    <version>1.0-SNAPSHOT</version>
-
-    <dependencies>
-        <!-- https://mvnrepository.com/artifact/org.apache.kafka/kafka-streams -->
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  <groupId>com.kafka.app</groupId>
+  <artifactId>kafka-stream-demo</artifactId>
+  <packaging>jar</packaging>
+  <version>1.0-SNAPSHOT</version>
+  <name>kafka-stream-demo</name>
+  <url>http://maven.apache.org</url>
+  <dependencies>
         <dependency>
             <groupId>org.apache.kafka</groupId>
             <artifactId>kafka-streams</artifactId>
@@ -153,10 +157,15 @@ Below is the complete `pom.xml` file.
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-log4j12</artifactId>
             <version>1.7.30</version>
-        </dependency>
-    </dependencies>
-
-    <build>
+    </dependency>
+    <dependency>
+      <groupId>junit</groupId>
+      <artifactId>junit</artifactId>
+      <version>3.8.1</version>
+      <scope>test</scope>
+    </dependency>
+  </dependencies>
+  <build>
         <plugins>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
@@ -191,7 +200,6 @@ Below is the complete `pom.xml` file.
             </plugin>
         </plugins>
     </build>
-
 </project>
 ```
 
@@ -203,7 +211,7 @@ We have also added the maven assembly plugin so that we can build a **standalon
 
 Here is the complete Java code for the kafka streams application
 
-```
+```java
 import org.apache.kafka.common.serialization.Serde;
 import org.apache.kafka.common.serialization.Serdes;
 import org.apache.kafka.streams.KafkaStreams;
@@ -215,8 +223,11 @@ import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import java.util.Properties;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 public class KafkaStreamsDemo {
+    private static final Logger log = Logger.getLogger(KafkaStreamsDemo.class);
+
     public static void main(String[] args) {
         BasicConfigurator.configure();
         Logger.getRootLogger().setLevel(Level.INFO);
@@ -245,14 +256,17 @@ public class KafkaStreamsDemo {
         final KafkaStreams streams = new KafkaStreams(builder.build(), props);
 
         final CountDownLatch latch = new CountDownLatch(1);
+        final AtomicBoolean failed = new AtomicBoolean(false);
 
-        try {
-            streams.start();
-            latch.await();
-        } catch (final Throwable e) {
-            System.exit(1);
-        }
+        // Log and stop on a stream thread failure (for example a value that
+        // Long.parseLong cannot parse) instead of letting the thread die silently.
+        streams.setUncaughtExceptionHandler((thread, throwable) -> {
+            log.error("Stream thread " + thread.getName() + " failed; shutting down", throwable);
+            failed.set(true);
+            latch.countDown();
+        });
 
+        // Registered before start() so Ctrl+C / SIGTERM closes the streams.
         Runtime.getRuntime().addShutdownHook(new Thread("streams-totalviews") {
             @Override
             public void run() {
@@ -261,7 +275,15 @@ public class KafkaStreamsDemo {
             }
         });
 
-        System.exit(0);
+        try {
+            streams.start();
+            latch.await();
+        } catch (final Throwable e) {
+            log.error("Failed to run Kafka Streams application", e);
+            System.exit(1);
+        }
+
+        System.exit(failed.get() ? 1 : 0);
     }
 }
 ```
@@ -332,18 +354,21 @@ Then we create a **KafkaStreams** object called **streams**
 
 Until now we have just created the kafka streams flow, but we have not yet started it.
 
-The Next few lines of code, starts the kafka streams application
+The next lines of code register the error handling and the shutdown hook, then start the kafka streams application
 
 ```
 final CountDownLatch latch = new CountDownLatch(1);
+final AtomicBoolean failed = new AtomicBoolean(false);
 
-try {
-    streams.start();
-    latch.await();
-} catch (final Throwable e) {
-    System.exit(1);
-}
+// Log and stop on a stream thread failure (for example a value that
+// Long.parseLong cannot parse) instead of letting the thread die silently.
+streams.setUncaughtExceptionHandler((thread, throwable) -> {
+    log.error("Stream thread " + thread.getName() + " failed; shutting down", throwable);
+    failed.set(true);
+    latch.countDown();
+});
 
+// Registered before start() so Ctrl+C / SIGTERM closes the streams.
 Runtime.getRuntime().addShutdownHook(new Thread("streams-totalviews") {
     @Override
     public void run() {
@@ -352,12 +377,22 @@ Runtime.getRuntime().addShutdownHook(new Thread("streams-totalviews") {
     }
 });
 
-System.exit(0);
+try {
+    streams.start();
+    latch.await();
+} catch (final Throwable e) {
+    log.error("Failed to run Kafka Streams application", e);
+    System.exit(1);
+}
+
+System.exit(failed.get() ? 1 : 0);
 ```
 
 We start the flow using `streams.start()`
 
-We also created a **Shutdown Hook** in the above lines of code. This ensures that if the application is abnormally shutdown, then the kafka streams application will close properly using the `streams.close()` function.
+The **uncaught exception handler** logs any failure on a stream thread (for example, a value that is not a number) and stops the application with a non-zero exit code.
+
+The **Shutdown Hook** is registered before `streams.start()`. If the application is stopped (Ctrl+C or SIGTERM), the hook calls `streams.close()` so the kafka streams application closes properly.
 
 # Running the Kafka streams application
 
@@ -383,8 +418,10 @@ In a second terminal, start a kafka producer using the following command
 bin/kafka-console-producer.sh --bootstrap-server localhost:9092 \
     --topic input-topic \
     --property key.separator=":" \
-    --property parse.key=true < ../data/country-list-sample.txt
+    --property parse.key=true < /path/to/docker-projects/apache-kafka/kafka-stream-demo/data/country-list-sample.txt
 ```
+
+Replace `/path/to/docker-projects` with the location of your clone of this repository. The sample file is `apache-kafka/kafka-stream-demo/data/country-list-sample.txt`. It is not in the Kafka folder, so the path must point to the repository.
 
 We will be producing into the kafka topic `input-topic`. Also we will separate the countries from the view count by a `:`
 
