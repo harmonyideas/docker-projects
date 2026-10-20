@@ -6,7 +6,7 @@ Edit .env and set DORIS_ROOT_PASSWORD. The compose file reads it with
 ${DORIS_ROOT_PASSWORD:?...} and refuses to start without it. .env is git-ignored.
 
 FE ports 8030 and 9030 are bound to 127.0.0.1 only.
-NOTE: the BE port 8040 is still published on all interfaces (not changed in this pass).
+The BE port 8040 is bound to 127.0.0.1 only. Containers reach it over doris_net by service name.
 
 ROOT PASSWORD
 -------------
